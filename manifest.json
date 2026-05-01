@@ -1,0 +1,10 @@
+{
+  "name": "LEORIN CRM",
+  "short_name": "LEORIN",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#111111",
+  "dir": "rtl",
+  "lang": "he"
+}

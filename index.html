@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<link rel="manifest" href="manifest.json">
+<title>LEORIN CRM</title>
+<style>
+*{box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#f5f5f5;margin:0;color:#111}
+header{background:#111;color:#fff;text-align:center;padding:15px;position:sticky;top:0;z-index:5}
+.wrap{max-width:580px;margin:auto;padding:10px 10px 90px}
+.card{background:#fff;border-radius:18px;padding:14px;margin:10px 0;box-shadow:0 2px 12px #0001}
+.tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;position:sticky;top:70px;background:#f5f5f5;padding:7px 0;z-index:4}
+button{width:100%;border:0;border-radius:14px;background:#111;color:#fff;font-size:16px;font-weight:700;padding:14px;margin-top:10px}
+.tabs button{font-size:12px;padding:10px 2px;margin:0;background:#333}
+input,select,textarea{width:100%;font-size:16px;padding:12px;border:1px solid #ddd;border-radius:12px;margin-top:5px;background:white}
+label{display:block;margin-top:10px;font-weight:700}
+.hidden{display:none}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.product{border:1px solid #eee;background:#fafafa;border-radius:14px;padding:10px;margin-top:9px}
+.small{font-size:12px;color:#666;line-height:1.5}
+.total{background:#111;color:#fff;border-radius:16px;padding:12px;margin-top:12px}
+.total div{display:flex;justify-content:space-between;border-bottom:1px solid #333;padding:7px 0}
+.total div:last-child{border-bottom:0}
+.row{border-bottom:1px solid #eee;padding:10px 0}
+.badge{display:inline-block;background:#eee;border-radius:20px;padding:4px 8px;font-size:12px;margin:2px}
+.green{color:#087b2f;font-weight:700}.red{color:#b00020;font-weight:700}
+.secondary{background:#555}.ok{background:#0b6b2b}.danger{background:#8b0000}
+.summary{border:2px solid #111;border-radius:18px;padding:14px;line-height:1.8;background:#fff}
+</style>
+</head>
+<body>
+<header>
+<h2>LEORIN CRM</h2>
+<div class="small" style="color:#ddd">הזמנות • מלאי • WhatsApp • תקציר חודשי</div>
+</header>
+
+<div class="wrap">
+<div class="tabs">
+<button data-tab="new">חדש</button>
+<button data-tab="summary">תקציר</button>
+<button data-tab="orders">הזמנות</button>
+<button data-tab="stock">מלאי</button>
+<button data-tab="month">חודשי</button>
+</div>
+
+<section id="new" class="card">
+<h3>הזמנה חדשה</h3>
+
+<label>תאריך</label>
+<input type="date" id="date">
+
+<label>סוג לקוח</label>
+<select id="clientType">
+<option>לקוח קבוע</option>
+<option>לקוח מזדמן</option>
+<option>סלון</option>
+<option>עובדת / מחליקה</option>
+</select>
+
+<label>שם לקוח</label>
+<input id="name" placeholder="ללקוח מזדמן אפשר להשאיר ריק">
+
+<label>טלפון</label>
+<input id="phone" placeholder="לא חובה">
+
+<label>כתובת / עיר</label>
+<input id="address" placeholder="לא חובה">
+
+<h3>מוצרים</h3>
+<div id="products"></div>
+
+<label>עלות משלוח</label>
+<input type="number" id="shipping" value="0">
+
+<label>סכום ששולם</label>
+<input type="number" id="paid" value="0">
+
+<label>שיטת תשלום</label>
+<select id="payment">
+<option>מזומן</option>
+<option>אשראי</option>
+<option>Bit</option>
+<option>העברה בנקאית</option>
+<option>Apple Pay</option>
+<option>Google Pay</option>
+<option>אחר</option>
+</select>
+
+<label>הופקד לחשבון בנק?</label>
+<select id="deposited"><option>לא</option><option>כן</option></select>
+
+<label>דווח ב־Invoice?</label>
+<select id="invoice"><option>לא</option><option>כן</option></select>
+
+<label>קיבל מתנה?</label>
+<select id="gift"><option>לא</option><option>כן</option></select>
+
+<label>איזו מתנה?</label>
+<input id="giftDetails">
+
+<label>הערות</label>
+<textarea id="notes" rows="2"></textarea>
+
+<div class="total">
+<div><span>מוצרים</span><b id="pTotal">0 ₪</b></div>
+<div><span>משלוח</span><b id="sTotal">0 ₪</b></div>
+<div><span>סה״כ</span><b id="gTotal">0 ₪</b></div>
+<div><span>שולם</span><b id="paidTotal">0 ₪</b></div>
+<div><span>חוב</span><b id="debtTotal">0 ₪</b></div>
+</div>
+
+<button id="saveBtn" type="button">שמור הזמנה + הורד מהמלאי</button>
+<button id="clearBtn" type="button" class="secondary">נקה טופס</button>
+</section>
+
+<section id="summary" class="card hidden">
+<h3>תקציר הזמנה</h3>
+<div id="summaryBox" class="summary">אין הזמנה עדיין</div>
+<button id="waBtn" type="button" class="ok">שלח תקציר לוואטסאפ 0508857288</button>
+<button id="printBtn" type="button" class="secondary">הדפס / שמור PDF</button>
+</section>
+
+<section id="orders" class="card hidden">
+<h3>כל ההזמנות</h3>
+<label>סינון</label>
+<select id="filter">
+<option>הכל</option>
+<option>לקוח מזדמן</option>
+<option>לקוח קבוע</option>
+<option>חייבים</option>
+<option>לא הופקד</option>
+<option>לא דווח Invoice</option>
+</select>
+<div id="ordersBox"></div>
+<button id="csvBtn" type="button" class="secondary">ייצוא CSV</button>
+</section>
+
+<section id="stock" class="card hidden">
+<h3>מלאי</h3>
+<p class="small">ערכה 5 מוצרים מורידה מהמלאי הבודד: שמפו + מסיכה + מסיכה ללא שטיפה + סרום + קומפלקס.</p>
+<div id="stockBox"></div>
+<button id="saveStockBtn" type="button">שמור מלאי</button>
+</section>
+
+<section id="month" class="card hidden">
+<h3>תקציר חודשי</h3>
+
+<label>בחר חודש</label>
+<input type="month" id="monthPick">
+
+<label>אימייל לשליחת תקציר</label>
+<input id="emailTo" placeholder="your@email.com">
+
+<div id="monthBox" class="summary">בחר חודש</div>
+
+<button id="monthMailBtn" type="button" class="ok">פתח טיוטת מייל עם תקציר חודשי</button>
+<button id="monthWaBtn" type="button" class="secondary">שלח תקציר חודשי לוואטסאפ 0508857288</button>
+</section>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+const PRODUCTS=["החלקה קרמית","החלקת ג׳ל","שמפו","מסיכה","מסיכה ללא שטיפה","סרום","קומפלקס","ערכה 5 מוצרים"];
+const STOCK=["החלקה קרמית","החלקת ג׳ל","שמפו","מסיכה","מסיכה ללא שטיפה","סרום","קומפלקס"];
+const BUNDLE=["שמפו","מסיכה","מסיכה ללא שטיפה","סרום","קומפלקס"];
+const WA="972508857288";
+const ORDERS_KEY="leorin_orders_fixed_v4";
+const STOCK_KEY="leorin_stock_fixed_v4";
+const LAST_KEY="leorin_last_fixed_v4";
+let lastId=localStorage.getItem(LAST_KEY)||"";
+
+const $=id=>document.getElementById(id);
+const money=n=>(Number(n)||0).toLocaleString("he-IL")+" ₪";
+const getOrders=()=>JSON.parse(localStorage.getItem(ORDERS_KEY)||"[]");
+const setOrders=o=>localStorage.setItem(ORDERS_KEY,JSON.stringify(o));
+
+function getStock(){
+  let s=JSON.parse(localStorage.getItem(STOCK_KEY)||"null");
+  if(!s){s={};STOCK.forEach(p=>s[p]=0);localStorage.setItem(STOCK_KEY,JSON.stringify(s));}
+  return s;
+}
+function setStock(s){localStorage.setItem(STOCK_KEY,JSON.stringify(s));}
+
+function init(){
+  $("date").valueAsDate=new Date();
+  const now=new Date();
+  $("monthPick").value=now.toISOString().slice(0,7);
+
+  $("products").innerHTML=PRODUCTS.map((p,i)=>`
+    <div class="product">
+      <b>${p}</b>
+      <div class="grid">
+        <div><label>כמות</label><input type="number" min="0" value="0" id="q${i}" class="calcInput"></div>
+        <div><label>מחיר ללקוח</label><input type="number" min="0" value="0" id="pr${i}" class="calcInput"></div>
+      </div>
+      ${p==="ערכה 5 מוצרים" ? '<div class="small">מכירה של ערכה מורידה 1 מכל מוצר בודד בערכה</div>' : ''}
+    </div>`).join("");
+
+  document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>tab(b.dataset.tab)));
+  document.querySelectorAll(".calcInput,#shipping,#paid").forEach(el=>el.addEventListener("input",calc));
+  $("saveBtn").addEventListener("click",saveOrder);
+  $("clearBtn").addEventListener("click",clearForm);
+  $("saveStockBtn").addEventListener("click",saveStockUI);
+  $("filter").addEventListener("change",render);
+  $("csvBtn").addEventListener("click",exportCSV);
+  $("printBtn").addEventListener("click",()=>window.print());
+  $("waBtn").addEventListener("click",sendLastWhatsApp);
+  $("monthPick").addEventListener("change",renderMonth);
+  $("monthMailBtn").addEventListener("click",sendMonthlyEmail);
+  $("monthWaBtn").addEventListener("click",sendMonthlyWhatsApp);
+
+  calc();
+  render();
+}
+
+function collectItems(){
+  return PRODUCTS.map((p,i)=>{
+    const qty=Number($("q"+i).value)||0;
+    const price=Number($("pr"+i).value)||0;
+    return {product:p,qty,price,total:qty*price};
+  });
+}
+
+function calc(){
+  const items=collectItems();
+  const productsTotal=items.reduce((s,x)=>s+x.total,0);
+  const shipping=Number($("shipping").value)||0;
+  const paid=Number($("paid").value)||0;
+  const total=productsTotal+shipping;
+  const debt=total-paid;
+  $("pTotal").textContent=money(productsTotal);
+  $("sTotal").textContent=money(shipping);
+  $("gTotal").textContent=money(total);
+  $("paidTotal").textContent=money(paid);
+  $("debtTotal").textContent=money(debt);
+  return {items,productsTotal,shipping,paid,total,debt};
+}
+
+function needFromItems(items){
+  const need={};
+  STOCK.forEach(p=>need[p]=0);
+  items.forEach(x=>{
+    if(x.qty<=0)return;
+    if(x.product==="ערכה 5 מוצרים"){
+      BUNDLE.forEach(p=>need[p]+=x.qty);
+    } else if(STOCK.includes(x.product)){
+      need[x.product]+=x.qty;
+    }
+  });
+  return need;
+}
+
+function saveOrder(){
+  const c=calc();
+
+  if(!$("name").value.trim() && $("clientType").value==="לקוח מזדמן"){
+    $("name").value="לקוח מזדמן";
+  }
+  if(!$("name").value.trim()){
+    alert("חסר שם לקוח");
+    return;
+  }
+  if(!c.items.some(x=>x.qty>0) && c.shipping===0){
+    alert("לא נבחר מוצר");
+    return;
+  }
+
+  const need=needFromItems(c.items);
+  const st=getStock();
+  const lack=[];
+  Object.keys(need).forEach(p=>{
+    if(need[p] > (st[p]||0)) lack.push(`${p}: צריך ${need[p]}, יש ${st[p]||0}`);
+  });
+
+  if(lack.length){
+    const ok=confirm("יש חוסר במלאי:\n\n"+lack.join("\n")+"\n\nלשמור בכל זאת?");
+    if(!ok)return;
+  }
+
+  Object.keys(need).forEach(p=>st[p]=(st[p]||0)-need[p]);
+  setStock(st);
+
+  const order={
+    id:"L"+Date.now(),
+    date:$("date").value,
+    clientType:$("clientType").value,
+    name:$("name").value.trim(),
+    phone:$("phone").value.trim(),
+    address:$("address").value.trim(),
+    items:c.items.filter(x=>x.qty>0),
+    productsTotal:c.productsTotal,
+    shipping:c.shipping,
+    total:c.total,
+    paid:c.paid,
+    debt:c.debt,
+    payment:$("payment").value,
+    deposited:$("deposited").value,
+    invoice:$("invoice").value,
+    gift:$("gift").value,
+    giftDetails:$("giftDetails").value.trim(),
+    notes:$("notes").value.trim(),
+    createdAt:new Date().toISOString()
+  };
+
+  const arr=getOrders();
+  arr.unshift(order);
+  setOrders(arr);
+  lastId=order.id;
+  localStorage.setItem(LAST_KEY,lastId);
+  render();
+  tab("summary");
+  alert("ההזמנה נשמרה והמלאי עודכן");
+}
+
+function orderText(o){
+  if(!o)return"";
+  const items=o.items.map(i=>`• ${i.product}: ${i.qty} × ${money(i.price)} = ${money(i.total)}`).join("\n");
+  return `LEORIN - תקציר הזמנה
+מספר: ${o.id}
+תאריך: ${o.date}
+סוג לקוח: ${o.clientType}
+שם: ${o.name}
+טלפון: ${o.phone||"-"}
+כתובת: ${o.address||"-"}
+
+מה נקנה:
+${items}
+
+מוצרים: ${money(o.productsTotal)}
+משלוח: ${money(o.shipping)}
+סה״כ: ${money(o.total)}
+שולם: ${money(o.paid)}
+חוב: ${money(o.debt)}
+
+שיטת תשלום: ${o.payment}
+הופקד לבנק: ${o.deposited}
+דווח Invoice: ${o.invoice}
+קיבל מתנה: ${o.gift} ${o.giftDetails||""}
+הערות: ${o.notes||"-"}`;
+}
+
+function orderHTML(o){
+  if(!o)return" אין הזמנה עדיין";
+  return orderText(o).replaceAll("\n","<br>");
+}
+
+function render(){
+  const arr=getOrders();
+  const last=arr.find(o=>o.id===lastId)||arr[0];
+  $("summaryBox").innerHTML=orderHTML(last);
+
+  let list=arr;
+  const f=$("filter").value;
+  if(f==="לקוח מזדמן")list=arr.filter(o=>o.clientType==="לקוח מזדמן");
+  if(f==="לקוח קבוע")list=arr.filter(o=>o.clientType==="לקוח קבוע");
+  if(f==="חייבים")list=arr.filter(o=>o.debt>0);
+  if(f==="לא הופקד")list=arr.filter(o=>o.deposited==="לא");
+  if(f==="לא דווח Invoice")list=arr.filter(o=>o.invoice==="לא");
+
+  $("ordersBox").innerHTML=list.map(o=>`
+    <div class="row">
+      <b>${o.name}</b> <span class="badge">${o.clientType}</span><br>
+      <span class="small">${o.date} | ${o.phone||""}</span><br>
+      ${o.items.map(i=>`<span class="badge">${i.product}: ${i.qty}</span>`).join("")}<br>
+      <b>סה״כ:</b> ${money(o.total)} | <b>שולם:</b> ${money(o.paid)} |
+      <span class="${o.debt>0?'red':'green'}">חוב: ${money(o.debt)}</span><br>
+      <span class="small">משלוח: ${money(o.shipping)} | תשלום: ${o.payment} | בנק: ${o.deposited} | Invoice: ${o.invoice}</span>
+      <button type="button" class="secondary openSummary" data-id="${o.id}">פתח תקציר</button>
+    </div>`).join("")||"אין הזמנות";
+
+  document.querySelectorAll(".openSummary").forEach(b=>b.addEventListener("click",()=>{
+    lastId=b.dataset.id;
+    localStorage.setItem(LAST_KEY,lastId);
+    render();
+    tab("summary");
+  }));
+
+  const st=getStock();
+  $("stockBox").innerHTML=STOCK.map(p=>`
+    <label>${p}</label>
+    <input type="number" id="st_${p}" value="${st[p]||0}">
+    <div class="${(st[p]||0)<=0?'red':'green'} small">נשאר במלאי: ${st[p]||0}</div>
+  `).join("");
+
+  renderMonth();
+}
+
+function renderMonth(){
+  const month=$("monthPick").value;
+  const arr=getOrders().filter(o=>(o.date||"").slice(0,7)===month);
+  const sales=arr.reduce((s,o)=>s+o.total,0);
+  const paid=arr.reduce((s,o)=>s+o.paid,0);
+  const debt=arr.reduce((s,o)=>s+Math.max(o.debt,0),0);
+  const notDep=arr.filter(o=>o.deposited==="לא").length;
+  const notInv=arr.filter(o=>o.invoice==="לא").length;
+  const occasional=arr.filter(o=>o.clientType==="לקוח מזדמן").length;
+
+  $("monthBox").innerHTML=`
+    <b>חודש:</b> ${month||"-"}<br>
+    <b>כמות הזמנות:</b> ${arr.length}<br>
+    <b>סה״כ מכירות:</b> ${money(sales)}<br>
+    <b>סה״כ שולם:</b> ${money(paid)}<br>
+    <b>סה״כ חובות:</b> ${money(debt)}<br>
+    <b>לקוחות מזדמנים:</b> ${occasional}<br>
+    <b>לא הופקד לבנק:</b> ${notDep}<br>
+    <b>לא דווח Invoice:</b> ${notInv}<br>
+  `;
+}
+
+function monthlyText(){
+  const month=$("monthPick").value;
+  const arr=getOrders().filter(o=>(o.date||"").slice(0,7)===month);
+  const sales=arr.reduce((s,o)=>s+o.total,0);
+  const paid=arr.reduce((s,o)=>s+o.paid,0);
+  const debt=arr.reduce((s,o)=>s+Math.max(o.debt,0),0);
+  const lines=arr.map(o=>`- ${o.date} | ${o.name} | ${money(o.total)} | שולם ${money(o.paid)} | חוב ${money(o.debt)} | ${o.payment}`).join("\n");
+  return `LEORIN - תקציר חודשי ${month}
+
+כמות הזמנות: ${arr.length}
+סה״כ מכירות: ${money(sales)}
+סה״כ שולם: ${money(paid)}
+סה״כ חובות: ${money(debt)}
+לא הופקד לבנק: ${arr.filter(o=>o.deposited==="לא").length}
+לא דווח Invoice: ${arr.filter(o=>o.invoice==="לא").length}
+
+פירוט הזמנות:
+${lines || "אין הזמנות בחודש הזה"}`;
+}
+
+function saveStockUI(){
+  const st=getStock();
+  STOCK.forEach(p=>st[p]=Number($("st_"+p).value)||0);
+  setStock(st);
+  render();
+  alert("המלאי נשמר");
+}
+
+function sendLastWhatsApp(){
+  const arr=getOrders();
+  const o=arr.find(x=>x.id===lastId)||arr[0];
+  if(!o){alert("אין הזמנה לשליחה");return;}
+  window.open(`https://wa.me/${WA}?text=${encodeURIComponent(orderText(o))}`,"_blank");
+}
+
+function sendMonthlyWhatsApp(){
+  window.open(`https://wa.me/${WA}?text=${encodeURIComponent(monthlyText())}`,"_blank");
+}
+
+function sendMonthlyEmail(){
+  const to=$("emailTo").value.trim();
+  if(!to){alert("תכניס אימייל קודם");return;}
+  const subject=encodeURIComponent("LEORIN - תקציר חודשי "+$("monthPick").value);
+  const body=encodeURIComponent(monthlyText());
+  window.location.href=`mailto:${to}?subject=${subject}&body=${body}`;
+}
+
+function exportCSV(){
+  const rows=[["מספר","תאריך","סוג לקוח","שם","טלפון","כתובת","מוצרים","משלוח","סהכ","שולם","חוב","תשלום","הופקד","Invoice","מתנה","הערות"]];
+  getOrders().forEach(o=>rows.push([
+    o.id,o.date,o.clientType,o.name,o.phone,o.address,
+    o.items.map(i=>`${i.product} ${i.qty}x${i.price}`).join(" | "),
+    o.shipping,o.total,o.paid,o.debt,o.payment,o.deposited,o.invoice,o.gift+" "+o.giftDetails,o.notes
+  ]));
+  const csv=rows.map(r=>r.map(x=>`"${String(x??"").replaceAll('"','""')}"`).join(",")).join("\n");
+  const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="leorin_orders.csv";
+  a.click();
+}
+
+function clearForm(){
+  ["name","phone","address","giftDetails","notes"].forEach(id=>$(id).value="");
+  PRODUCTS.forEach((p,i)=>{$("q"+i).value=0;$("pr"+i).value=0;});
+  $("shipping").value=0;
+  $("paid").value=0;
+  calc();
+}
+
+function tab(id){
+  ["new","summary","orders","stock","month"].forEach(x=>$(x).classList.add("hidden"));
+  $(id).classList.remove("hidden");
+  render();
+  window.scrollTo(0,0);
+}
+
+window.addEventListener("DOMContentLoaded",init);
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+})();
+</script>
+</body>
+</html>
